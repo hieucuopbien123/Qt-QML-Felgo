@@ -1,0 +1,29 @@
+﻿Để deploy 1 app lập trình thì cần build app đó ở chế dộ Release. Chế độ build profile là nằm ở giữa debug và release ít dùng nên ta k qt. Chế độ debug là chế độ cho lập trình viên code, nó dễ dàng cho lập trình viên kiểm tra lỗi khi chạy code(mặc dù có 1 số lỗi mà chỉ release ms nhìn ra), nó bao gồm nh thông tin về code nên nặng hơn nhiều so với CT exe build ở release. Chế độ release dành cho ng dùng vì chỉ cần chạy đc chứ k cần qt vc phát hiện lỗi.
+
+Khi deploy Ct tùy vào hệ điều hành khác nhau mà phải deploy các cách khác nhau. Trên desktop có Linux, MAC, Windows, còn trên phone có Android, IOS, Embedded. Các ứng dụng Qt tương thích với mọi hệ điều hành nên chỉ cần build lại là dùng đc vs hệ điều hành khác. Ở đây ta chỉ qt tới windows.
+
+Cách deploy:
+Ta cần add các dependencies vào cùng 1 chỗ app. Thêm thủ công bằng cách thêm các file dll ở trong máy mà Ct cần nhưng cách này gây 1 số lỗi có thể éo tìm ra đc. Ta có thể install bằng các tool mà Ct cung cấp. K chỉ Qt, thông thường các ngôn ngữ lập trình có hỗ trợ sẵn các tool như v. 
+=>dùng windeployqt ở trong thư mục bin(cùng vị trí vs các file dll)(k thể mở trực tiếp mà dùng Qt cmd): ta cần chọn đúng thư mục ming 32 hay 64 tùy vào ta build ntn->mở commandPrompt for Qt-> chỉ cần lấy file exe của qt ra 1 thư mục khác mà ta deploy vào đó-> cd trỏ đến nơi có cái file exe đó
+(=>các lệnh qt cmd thg dùng: cls / dir / gõ tên file + bấm tab sẽ tự hiện ra / windeployqt -h (là lệnh liệt kê các options deploy))
+(-> gõ windeployqt -h )-> gõ windeployqt <link đến file exe cần deploy> 
+=>thế là mọi thứ đc add, ta mở file exe đó ra là có r
+
+Cách cài app thành 1 file installer duy nhất sau khi deploy:
+1 folder installer cơ bản thì có: 1 thư mục config gồm 1 file xml chứa thông tin về app như tên, version,..; 1 thư mục packages gồm các components, có thể có nhiều components vì khi ta cài 1 app thì có thể có nhiều component ta muốn cài, và khi cài thì ta có quyền chọn cài component nào. Mỗi component có thư mục data, meta. Thư mục data chứa file exe với dependencies(dll,..) ta deploy bên trên. Còn meta chứa nhiều file, trong đó có 1 file package.xml chứa thông tin về vc install; 
+Để làm vc này ta dùng 1 tool khác của qt là Qt Installer Framework, tải về-> download.qt.io-> official release->qt_installer_framework-> tải về cho bản window-> cài. Thư mục của nó có 2 cái qtr: thứ nhất là bin có binarycreator là Ct exe làm nv gom các file lại thành 1 cái installer(k thể chạy tt mà dùng qt cmd vs các exe đi kèm app); thứ 2 là example có các ví dụ về file cài đặt cứ lấy 1 cái mà dùng;
+ta lấy 1 example cơ bản là tutorial->copy sang nơi muốn tạo, đổi tên và chỉnh sửa các file thành nội dung của ta và xóa các thứ k cần thiết-> chú ý file chỉnh thông tin ở config.xml và package.xml và copy các dependencies với exe vào thư mục data.
+Khi chỉnh sửa cái script ta bỏ đi vì khác phức tạp chưa học chuyển thành <Default>true</Default>
+->Mở qt cmd-> trỏ đến binarycreator-> <link tuyệt đối đến binarycreator>\binarycreator.exe -c config\config.xml -p packages <tên app>.exe
+->gửi file installer cho ng khác
+
+=>thật ra vc nén thành 1 cái installer nó đòi hỏi nh thứ khác và đó chỉ là cơ bản. Nếu ta muốn cái app của ta xuất hiện trên thanh start menu của window thì cần chọn examples khác=> ta có thể search qt document cho tất cả các examples này
+
+Khi tìm các file dll thì có thể gặp VD QGui4.dll và QGuid4.dll thì cái có d là dùng chạy ở folder debug
+
+Còn 1 app khác chung hơn là Dependencies Walker hướng dẫn của voidrealm
+
+
+Phân biệt shared compilation và static compilation: từ trc đến h là ta dùng shared compilation để tạo ra phần mềm thì nó thiếu file dll-> nguyên nhân là khi ta compile thì nó shared để dùng chung file dll có sẵn trong qt để dùng còn static compilation sẽ compile các file dll kèm luôn với file exe-> 1 file exe duy nhất. Static compile k hoàn toàn apply toàn bộ dll vào exe mà nó sẽ chừa lại các file dll có sẵn trong window hỗ trợ(k xét linux) k cần đính kèm, nhưng khi xuất ra vẫn chỉ có 1 exe đáp sang máy win khác chạy vẫn đc->static file nặng hơn.
+Tạo static compile trong qt: sẽ học về sau
+
